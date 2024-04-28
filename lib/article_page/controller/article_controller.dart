@@ -1,7 +1,5 @@
 import 'dart:convert';
-
 import 'package:article/article_page/widgets/text.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../model/article_model.dart';

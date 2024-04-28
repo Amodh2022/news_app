@@ -9,8 +9,14 @@ class ContentPage extends StatefulWidget {
   final String? title;
   final String? url;
   final String? content;
+  final bool? isInFav;
   const ContentPage(
-      {super.key, this.urlToImage, this.title, this.url, this.content});
+      {super.key,
+      this.urlToImage,
+      this.title,
+      this.url,
+      this.content,
+      this.isInFav});
 
   @override
   State<ContentPage> createState() => _ContentPageState();
@@ -19,6 +25,7 @@ class ContentPage extends StatefulWidget {
 class _ContentPageState extends State<ContentPage> {
   final ScrollController _scrollController = ScrollController();
   List<String> contentList = [];
+
   @override
   void initState() {
     super.initState();
@@ -35,7 +42,12 @@ class _ContentPageState extends State<ContentPage> {
             const SizedBox(
               width: 5,
             ),
-            const Icon(Icons.arrow_back_ios_new_rounded),
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: const Icon(Icons.arrow_back_ios_new_rounded),
+            ),
             const SizedBox(
               width: 5,
             ),
@@ -54,8 +66,22 @@ class _ContentPageState extends State<ContentPage> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.network(widget.urlToImage ??
-                    "https://www.shutterstock.com/image-vector/no-image-available-vector-illustration-260nw-744886198.jpg"),
+                child: Stack(
+                  children: [
+                    Image.network(widget.urlToImage ??
+                        "https://www.shutterstock.com/image-vector/no-image-available-vector-illustration-260nw-744886198.jpg"),
+                    widget.isInFav!
+                        ? const Positioned(
+                            top: 10,
+                            right: 10,
+                            child: Icon(
+                              Icons.favorite,
+                              color: Colors.red,
+                              size: 35,
+                            ))
+                        : Container(),
+                  ],
+                ),
               ),
               const SizedBox(
                 height: 10,
@@ -93,9 +119,11 @@ class _ContentPageState extends State<ContentPage> {
     var document = parser.parse(response.body);
     var articleElements = document.getElementsByTagName('p');
     for (var element in articleElements) {
-      setState(() {
-        contentList.add(element.text);
-      });
+      if (mounted) {
+        setState(() {
+          contentList.add(element.text);
+        });
+      }
     }
   }
 }

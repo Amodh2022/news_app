@@ -1,5 +1,6 @@
 import 'package:article/article_page/controller/article_controller.dart';
 import 'package:article/article_page/model/article_model.dart';
+import 'package:article/article_page/model/fav_model.dart';
 import 'package:article/article_page/widgets/text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class _ArticlePageState extends State<ArticlePage>
   final ArticleController _articleController = ArticleController();
   final ScrollController _scrollController = ScrollController();
   final ScrollController _scrollControllerFav = ScrollController();
+  List<FavModel> favModel = [];
 
   DateTime? _currentDateTime;
   String formattedDate = "";
@@ -33,7 +35,7 @@ class _ArticlePageState extends State<ArticlePage>
     _currentDateTime = DateTime.now();
     formattedDate = DateFormat("yyyy-MM-dd").format(_currentDateTime!);
     _tabController = TabController(length: 2, vsync: this);
-    _callFetchArticle();
+    _fetchArticle();
   }
 
   @override
@@ -76,6 +78,7 @@ class _ArticlePageState extends State<ArticlePage>
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
                   children: [
+                    ///News TabBar
                     isLoading
                         ? const Center(
                             child: CupertinoActivityIndicator(),
@@ -95,31 +98,27 @@ class _ArticlePageState extends State<ArticlePage>
                                 child: ListView.builder(
                                     controller: _scrollController,
                                     itemBuilder: (context, index) {
+                                      bool checkIsThere = _articleController.fav
+                                          .contains(_articleController
+                                              .articleData[index]);
                                       return GestureDetector(
                                         onTap: () {
                                           Navigator.of(context).push(
                                               MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ContentPage(
-                                                        urlToImage:
-                                                            _articleController
-                                                                .articleData[
-                                                                    index]
-                                                                .urlToImage,
-                                                        title:
-                                                            _articleController
-                                                                .articleData[
-                                                                    index]
-                                                                .title,
-                                                        url: _articleController
-                                                            .articleData[index]
-                                                            .url,
-                                                        content:
-                                                            _articleController
-                                                                .articleData[
-                                                                    index]
-                                                                .content,
-                                                      )));
+                                                  builder: (context) {
+                                            return ContentPage(
+                                              isInFav: checkIsThere,
+                                              urlToImage: _articleController
+                                                  .articleData[index]
+                                                  .urlToImage,
+                                              title: _articleController
+                                                  .articleData[index].title,
+                                              url: _articleController
+                                                  .articleData[index].url,
+                                              content: _articleController
+                                                  .articleData[index].content,
+                                            );
+                                          }));
                                         },
                                         child: Container(
                                           decoration: BoxDecoration(
@@ -174,8 +173,15 @@ class _ArticlePageState extends State<ArticlePage>
                                                                       SnackBarBehavior
                                                                           .floating,
                                                                   content: Text(
-                                                                      "Got it! Seems like we're synced up on this one. Anything else you'd like to add?")));
+                                                                      "Already added to Favs")));
                                                             } else {
+                                                              favModel.add(FavModel(
+                                                                  true,
+                                                                  _articleController
+                                                                      .articleData[
+                                                                          index]
+                                                                      .title));
+
                                                               _articleController
                                                                   .fav
                                                                   .add(_articleController
@@ -189,7 +195,7 @@ class _ArticlePageState extends State<ArticlePage>
                                                                       SnackBarBehavior
                                                                           .floating,
                                                                   content: Text(
-                                                                      "Added to Fav")));
+                                                                      "Added to Favs")));
                                                             }
                                                           });
 
@@ -220,12 +226,17 @@ class _ArticlePageState extends State<ArticlePage>
                                             key: ValueKey<ArticleData>(
                                                 _articleController
                                                     .articleData[index]),
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: _kPadding,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          10)),
+                                              padding: EdgeInsets.only(
                                                   top: _kPadding,
-                                                  right: _kPadding,
-                                                  bottom: _kPadding),
+                                                  left: _kPadding,
+                                                  bottom: _kPadding,
+                                                  right: _kPadding),
                                               child: Row(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -290,10 +301,14 @@ class _ArticlePageState extends State<ArticlePage>
                                     itemCount:
                                         _articleController.articleData.length)),
 
-                    ///Fav
+                    ///Fav TabBar
                     _articleController.fav.isEmpty
-                        ? const Center(
-                            child: Text("No Data"),
+                        ? Center(
+                            child: Text(
+                              "Your favorites list is waiting for you to fill it",
+                              style:
+                                  robotoText(14, FontWeight.w500, Colors.black),
+                            ),
                           )
                         : CupertinoScrollbar(
                             thumbVisibility: true,
@@ -301,73 +316,156 @@ class _ArticlePageState extends State<ArticlePage>
                             child: ListView.builder(
                                 controller: _scrollControllerFav,
                                 itemBuilder: (context, index) {
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                        boxShadow: const [
-                                          BoxShadow(
-                                              color: Colors.grey, //New
-                                              blurRadius: 85.0,
-                                              offset: Offset(0, 17.42))
-                                        ],
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(12)),
-                                    margin: const EdgeInsets.only(
-                                        left: _kPadding,
-                                        right: _kPadding,
-                                        top: _kPadding),
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(builder: (context) {
+                                        return ContentPage(
+                                          isInFav: true,
+                                          urlToImage: _articleController
+                                              .fav[index].urlToImage,
+                                          title: _articleController
+                                              .fav[index].title,
+                                          url:
+                                              _articleController.fav[index].url,
+                                          content: _articleController
+                                              .fav[index].content,
+                                        );
+                                      }));
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          boxShadow: const [
+                                            BoxShadow(
+                                                color: Colors.grey, //New
+                                                blurRadius: 85.0,
+                                                offset: Offset(0, 17.42))
+                                          ],
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(12)),
+                                      margin: const EdgeInsets.only(
                                           left: _kPadding,
-                                          top: _kPadding,
                                           right: _kPadding,
-                                          bottom: _kPadding),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                          top: _kPadding),
+                                      child: Stack(
                                         children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            child: Image.network(
-                                              fit: BoxFit.fill,
-                                              _articleController
-                                                      .fav[index].urlToImage ??
-                                                  "https://www.shutterstock.com/shutterstock/photos/2059817444/display_1500/stock-vector-no-image-available-photo-coming-soon-illustration-vector-2059817444.jpg",
-                                              height: 80,
-                                              width: 96,
-                                            ),
-                                          ),
-                                          Flexible(
-                                              child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 10),
-                                            child: Column(
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: _kPadding,
+                                                bottom: _kPadding,
+                                                top: _kPadding,
+                                                right: _kPadding),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  maxLines: 2,
-                                                  _articleController
-                                                          .fav[index].title ??
-                                                      "",
-                                                  style: robotoText(
-                                                      13.2,
-                                                      FontWeight.w700,
-                                                      Colors.black),
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  child: Image.network(
+                                                    fit: BoxFit.fill,
+                                                    _articleController
+                                                            .fav[index]
+                                                            .urlToImage ??
+                                                        "https://www.shutterstock.com/shutterstock/photos/2059817444/display_1500/stock-vector-no-image-available-photo-coming-soon-illustration-vector-2059817444.jpg",
+                                                    height: 80,
+                                                    width: 96,
+                                                  ),
                                                 ),
-                                                Text(
-                                                  softWrap: true,
-                                                  maxLines: 2,
-                                                  _articleController
-                                                          .fav[index].content ??
-                                                      "",
-                                                  style: robotoText(
-                                                      10.2,
-                                                      FontWeight.w400,
-                                                      Colors.black),
-                                                )
+                                                Flexible(
+                                                    child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 10),
+                                                  child: Column(
+                                                    children: [
+                                                      Text(
+                                                        maxLines: 2,
+                                                        _articleController
+                                                                .fav[index]
+                                                                .title ??
+                                                            "",
+                                                        style: robotoText(
+                                                            13.2,
+                                                            FontWeight.w700,
+                                                            Colors.black),
+                                                      ),
+                                                      Text(
+                                                        softWrap: true,
+                                                        maxLines: 2,
+                                                        _articleController
+                                                                .fav[index]
+                                                                .content ??
+                                                            "",
+                                                        style: robotoText(
+                                                            10.2,
+                                                            FontWeight.w400,
+                                                            Colors.black),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ))
                                               ],
                                             ),
-                                          ))
+                                          ),
+                                          Positioned(
+                                              right: 5,
+                                              top: 5,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return CupertinoAlertDialog(
+                                                        title:
+                                                            const Text('Alert'),
+                                                        content: const Text(
+                                                            'Remove This Article Fav'),
+                                                        actions: <CupertinoDialogAction>[
+                                                          CupertinoDialogAction(
+                                                            isDefaultAction:
+                                                                true,
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: const Text(
+                                                                'No'),
+                                                          ),
+                                                          CupertinoDialogAction(
+                                                            isDestructiveAction:
+                                                                true,
+                                                            onPressed: () {
+                                                              setState(() {
+                                                                _articleController
+                                                                    .fav
+                                                                    .removeAt(
+                                                                        index);
+                                                                Navigator.pop(
+                                                                    context);
+                                                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                                                    backgroundColor:
+                                                                        Colors
+                                                                            .green,
+                                                                    behavior:
+                                                                        SnackBarBehavior
+                                                                            .floating,
+                                                                    content: Text(
+                                                                        "Article Removed From Favs")));
+                                                              });
+                                                            },
+                                                            child: const Text(
+                                                                'Yes'),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                child: const Icon(Icons.delete),
+                                              ))
                                         ],
                                       ),
                                     ),
@@ -383,7 +481,7 @@ class _ArticlePageState extends State<ArticlePage>
     );
   }
 
-  Future<void> _callFetchArticle() async {
+  Future<void> _fetchArticle() async {
     setState(() {
       isLoading = true;
     });
