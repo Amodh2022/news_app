@@ -539,6 +539,50 @@ class _ArticlePageState extends State<ArticlePage>
                                                             10.2,
                                                             FontWeight.w400,
                                                             Colors.black),
+                                                      ),
+                                                      Row(
+                                                        children: [
+                                                          const Icon(
+                                                            Icons
+                                                                .calendar_month_sharp,
+                                                            size: 15,
+                                                            color: Colors.grey,
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 3,
+                                                          ),
+                                                          Text(
+                                                            softWrap: true,
+                                                            maxLines: 2,
+                                                            "$day,",
+                                                            style: robotoText(
+                                                                12,
+                                                                FontWeight.w700,
+                                                                const Color
+                                                                    .fromRGBO(
+                                                                    185,
+                                                                    185,
+                                                                    185,
+                                                                    1)),
+                                                          ),
+                                                          Flexible(
+                                                              child: Text(
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            softWrap: true,
+                                                            " $date GMT",
+                                                            style: robotoText(
+                                                                12,
+                                                                FontWeight.w700,
+                                                                const Color
+                                                                    .fromRGBO(
+                                                                    185,
+                                                                    185,
+                                                                    185,
+                                                                    1)),
+                                                          ))
+                                                        ],
                                                       )
                                                     ],
                                                   ),
