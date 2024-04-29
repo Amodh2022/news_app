@@ -513,6 +513,9 @@ class _ArticlePageState extends State<ArticlePage>
                                                       .symmetric(
                                                       horizontal: 10),
                                                   child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
                                                       Text(
                                                         maxLines: 2,
