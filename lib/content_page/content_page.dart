@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart' as parser;
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class ContentPage extends StatefulWidget {
   final String? urlToImage;
@@ -25,11 +26,19 @@ class ContentPage extends StatefulWidget {
 class _ContentPageState extends State<ContentPage> {
   final ScrollController _scrollController = ScrollController();
   List<String> contentList = [];
+  bool isLoading = false;
+  String day = "";
+  String date = "";
+  DateTime? _currentDateTime;
 
   @override
   void initState() {
     super.initState();
-    _parse();
+    _currentDateTime = DateTime.now().subtract(const Duration(days: 2));
+    date = DateFormat('dd-MMM-yyyy hh:mm').format(_currentDateTime!);
+
+    day = DateFormat('EEEE').format(_currentDateTime!);
+    _scrapeDataFromWeb();
   }
 
   @override
@@ -90,23 +99,58 @@ class _ContentPageState extends State<ContentPage> {
                 widget.title!,
                 style: robotoText(16, FontWeight.w700, Colors.black),
               ),
-              Expanded(
-                child: CupertinoScrollbar(
-                  controller: _scrollController,
-                  thumbVisibility: true,
-                  child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: contentList.length,
-                      itemBuilder: (context, index) {
-                        return Text(
-                          contentList.isEmpty
-                              ? widget.content!
-                              : contentList[index],
-                          style: robotoText(12, FontWeight.w300, Colors.black),
-                        );
-                      }),
-                ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.calendar_month_sharp,
+                    size: 15,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(
+                    width: 3,
+                  ),
+                  Text(
+                    softWrap: true,
+                    maxLines: 2,
+                    "$day,",
+                    style: robotoText(12, FontWeight.w700,
+                        const Color.fromRGBO(185, 185, 185, 1)),
+                  ),
+                  Flexible(
+                      child: Text(
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
+                    " $date GMT",
+                    style: robotoText(12, FontWeight.w700,
+                        const Color.fromRGBO(185, 185, 185, 1)),
+                  ))
+                ],
               ),
+              const SizedBox(
+                height: 10,
+              ),
+              isLoading
+                  ? const Center(
+                      child: CupertinoActivityIndicator(),
+                    )
+                  : Expanded(
+                      child: CupertinoScrollbar(
+                        controller: _scrollController,
+                        thumbVisibility: true,
+                        child: ListView.builder(
+                            controller: _scrollController,
+                            itemCount: contentList.length,
+                            itemBuilder: (context, index) {
+                              return Text(
+                                contentList.isEmpty
+                                    ? widget.content!
+                                    : contentList[index],
+                                style: robotoText(
+                                    12, FontWeight.w300, Colors.black),
+                              );
+                            }),
+                      ),
+                    ),
             ],
           ),
         ),
@@ -114,7 +158,10 @@ class _ContentPageState extends State<ContentPage> {
     );
   }
 
-  _parse() async {
+  _scrapeDataFromWeb() async {
+    setState(() {
+      isLoading = true;
+    });
     final response = await http.Client().get(Uri.parse(widget.url!));
     var document = parser.parse(response.body);
     var articleElements = document.getElementsByTagName('p');
@@ -122,6 +169,7 @@ class _ContentPageState extends State<ContentPage> {
       if (mounted) {
         setState(() {
           contentList.add(element.text);
+          isLoading = false;
         });
       }
     }

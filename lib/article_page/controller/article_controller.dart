@@ -50,9 +50,11 @@ class ArticleController {
 
   List<ArticleData> fav = [];
 
+  String apiKey = "2b03a895509b4c7ba243dd5289d63318";
+
   Future<Article> fetchArticle(String date) async {
     String url =
-        "https://newsapi.org/v2/everything?q=tesla&from=2024-04-24&sortBy=publishedAt&apiKey=8aa8f4f91bb5414cbe669cd59f08092a";
+        "https://newsapi.org/v2/everything?q=tesla&from=$date&sortBy=publishedAt&apiKey=$apiKey";
     http.Response response = await http.get(Uri.parse(url));
     final data = jsonDecode(response.body);
     return Article.fromJson(data);
