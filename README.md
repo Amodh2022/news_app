@@ -3,6 +3,7 @@ News Article
 
 ## Table of Contents
 - [Installation](#installation)
+[news_app_video.mp4](assets/video/news_app_video.mp4)
 
 ## Installation
 

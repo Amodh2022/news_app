@@ -694,7 +694,7 @@ class _ArticlePageState extends State<ArticlePage>
               color: Colors.white,
             ),
             Text(
-              " Add to Fav",
+              "Add to Fav",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
